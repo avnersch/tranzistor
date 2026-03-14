@@ -4,10 +4,10 @@
     "slug": "Tranzistor",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/tranzistor-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/tranzistor-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
@@ -23,9 +23,7 @@
       "package": "com.tranzistor.radio",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/tranzistor-icon.png"
       },
       "permissions": [
         "android.permission.WAKE_LOCK",
@@ -36,7 +34,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/tranzistor-icon.png",
       "name": "טרנזיסטור",
       "bundler": "metro"
     },

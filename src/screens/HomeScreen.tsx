@@ -90,7 +90,7 @@ export function HomeScreen() {
           )}
           <View style={styles.titleRow}>
             <Text style={styles.title}>טרנזיסטור</Text>
-            <Image source={require('../../assets/radio-icon.png')} style={styles.titleIcon} resizeMode="contain" />
+            <Image source={require('../../assets/tranzistor-icon.png')} style={styles.titleIcon} resizeMode="contain" />
           </View>
         </View>
       </View>
