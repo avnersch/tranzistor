@@ -1,5 +1,9 @@
 {
   "name": "tranzistor-proxy",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "shazam-api": "^0.3.0",
+    "ffmpeg-static": "^5.2.0"
+  }
 }

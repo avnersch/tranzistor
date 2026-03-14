@@ -18,6 +18,7 @@ import { PlayerBar } from '../components/PlayerBar';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useAllNowPlaying } from '../hooks/useNowPlaying';
 import { useMediaSession } from '../hooks/useMediaSession';
+import { useAllShazamMatches } from '../hooks/useShazamMatch';
 import { Colors, Fonts } from '../theme/colors';
 
 const stationIds = stations.map((s) => s.id);
@@ -26,6 +27,7 @@ export function HomeScreen() {
   const player = useAudioPlayer();
   const { data: allNowPlaying, refresh } = useAllNowPlaying(stationIds);
   const nowPlaying = allNowPlaying[player.currentStation?.id ?? ''] ?? null;
+  const allShazam = useAllShazamMatches();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -54,16 +56,20 @@ export function HomeScreen() {
     }
   };
 
-  const renderStation = ({ item }: { item: Station }) => (
-    <StationCard
-      station={item}
-      isPlaying={player.currentStation?.id === item.id && (player.isPlaying || player.isLoading)}
-      isLoading={player.currentStation?.id === item.id && player.isLoading}
-      subtitle={allNowPlaying[item.id] || item.frequency}
-      isSubtitleLoading={allNowPlaying[item.id] === undefined}
-      onPress={() => handleStationPress(item)}
-    />
-  );
+  const renderStation = ({ item }: { item: Station }) => {
+    const isActive = player.currentStation?.id === item.id;
+    return (
+      <StationCard
+        station={item}
+        isPlaying={isActive && (player.isPlaying || player.isLoading)}
+        isLoading={isActive && player.isLoading}
+        subtitle={allNowPlaying[item.id] || item.frequency}
+        isSubtitleLoading={allNowPlaying[item.id] === undefined}
+        shazamMatch={allShazam[item.id] ?? null}
+        onPress={() => handleStationPress(item)}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
@@ -100,7 +106,7 @@ export function HomeScreen() {
         numColumns={1}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        extraData={allNowPlaying}
+        extraData={{ allNowPlaying, allShazam }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -116,6 +122,7 @@ export function HomeScreen() {
         isPlaying={player.isPlaying}
         isLoading={player.isLoading}
         nowPlaying={nowPlaying}
+        shazamMatch={allShazam[player.currentStation?.id ?? ''] ?? null}
         onTogglePlayPause={player.togglePlayPause}
         onStop={player.stop}
       />

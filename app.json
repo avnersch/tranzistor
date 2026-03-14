@@ -37,7 +37,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "name": "טרנזיסטור"
+      "name": "טרנזיסטור",
+      "bundler": "metro"
+    },
+    "experiments": {
+      "baseUrl": "/tranzistor"
     },
     "plugins": [
       [

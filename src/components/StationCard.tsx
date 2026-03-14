@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Station } from '../data/stations';
 import { STATION_LOGOS } from '../data/stationLogos';
+import { ShazamMatch } from '../hooks/useShazamMatch';
 import { Colors, Fonts } from '../theme/colors';
 import { AnimatedBars } from './AnimatedBars';
 import { ShimmerLine } from './ShimmerLine';
@@ -19,6 +20,7 @@ interface Props {
   isLoading: boolean;
   subtitle: string;
   isSubtitleLoading?: boolean;
+  shazamMatch?: ShazamMatch | null;
   onPress: () => void;
 }
 
@@ -28,6 +30,7 @@ export function StationCard({
   isLoading,
   subtitle,
   isSubtitleLoading,
+  shazamMatch,
   onPress,
 }: Props) {
   return (
@@ -52,6 +55,11 @@ export function StationCard({
           <ShimmerLine width={90} height={10} borderRadius={4} style={{ marginTop: 4, alignSelf: 'flex-end' }} />
         ) : (
           <Text style={styles.frequency} numberOfLines={1}>{subtitle}</Text>
+        )}
+        {shazamMatch && (
+          <Text style={styles.shazamMatch} numberOfLines={1}>
+            🎵 {shazamMatch.title}{shazamMatch.artist ? ` – ${shazamMatch.artist}` : ''}
+          </Text>
         )}
       </View>
 
@@ -125,6 +133,14 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     marginTop: 2,
     textAlign: 'right',
+  },
+  shazamMatch: {
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    color: Colors.primary,
+    marginTop: 2,
+    textAlign: 'right',
+    writingDirection: 'ltr',
   },
   indicator: {
     width: 30,

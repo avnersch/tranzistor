@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Station } from '../data/stations';
 import { STATION_LOGOS } from '../data/stationLogos';
+import { ShazamMatch } from '../hooks/useShazamMatch';
 import { Colors, Fonts } from '../theme/colors';
 import { MarqueeText } from './MarqueeText';
 
@@ -17,6 +18,7 @@ interface Props {
   isPlaying: boolean;
   isLoading: boolean;
   nowPlaying: string | null;
+  shazamMatch?: ShazamMatch | null;
   onTogglePlayPause: () => void;
   onStop: () => void;
 }
@@ -47,6 +49,7 @@ export function PlayerBar({
   isPlaying,
   isLoading,
   nowPlaying,
+  shazamMatch,
   onTogglePlayPause,
   onStop,
 }: Props) {
@@ -89,6 +92,15 @@ export function PlayerBar({
           <Text style={styles.frequency} numberOfLines={1}>
             {isLoading ? 'טוען...' : station.frequency}
           </Text>
+        )}
+        {shazamMatch && !isLoading && (
+          <View style={styles.shazamRow}>
+            <MarqueeText
+              text={`${shazamMatch.title}${shazamMatch.artist ? ` – ${shazamMatch.artist}` : ''}`}
+              style={styles.shazamText}
+            />
+            <Text style={styles.shazamText}>🎵 </Text>
+          </View>
         )}
       </View>
 
@@ -185,6 +197,20 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginTop: 2,
     marginLeft: 12,
+  },
+  shazamRow: {
+    flexDirection: 'row',
+    alignSelf: 'stretch',
+    justifyContent: 'flex-end',
+    marginTop: 1,
+    marginLeft: 12,
+  },
+  shazamText: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#7CB3F4',
+    textAlign: 'right',
+    flexShrink: 0,
   },
   frequency: {
     fontSize: 13,

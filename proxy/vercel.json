@@ -1,5 +1,12 @@
 {
   "rewrites": [
-    { "source": "/api/now-playing", "destination": "/api/now-playing" }
-  ]
+    { "source": "/api/now-playing", "destination": "/api/now-playing" },
+    { "source": "/api/shazam", "destination": "/api/shazam" }
+  ],
+  "functions": {
+    "api/shazam.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
 }
