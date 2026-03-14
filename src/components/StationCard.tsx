@@ -21,6 +21,7 @@ interface Props {
   subtitle: string;
   isSubtitleLoading?: boolean;
   shazamMatch?: ShazamMatch | null;
+  isShazamLoading?: boolean;
   onPress: () => void;
 }
 
@@ -31,6 +32,7 @@ export function StationCard({
   subtitle,
   isSubtitleLoading,
   shazamMatch,
+  isShazamLoading,
   onPress,
 }: Props) {
   return (
@@ -56,11 +58,16 @@ export function StationCard({
         ) : (
           <Text style={styles.frequency} numberOfLines={1}>{subtitle}</Text>
         )}
-        {shazamMatch && (
-          <Text style={styles.shazamMatch} numberOfLines={1}>
-            🎵 {shazamMatch.title}{shazamMatch.artist ? ` – ${shazamMatch.artist}` : ''}
-          </Text>
-        )}
+        {isShazamLoading ? (
+          <ShimmerLine width={110} height={10} borderRadius={4} style={{ marginTop: 4, alignSelf: 'flex-end' }} />
+        ) : shazamMatch ? (
+          <View style={styles.shazamRow}>
+            <Text style={styles.shazamText} numberOfLines={1}>
+              {shazamMatch.artist}{shazamMatch.title ? ` – ${shazamMatch.title}` : ''}
+            </Text>
+            <Text style={styles.shazamEmoji}>🎵 </Text>
+          </View>
+        ) : null}
       </View>
 
       {isPlaying && (
@@ -134,13 +141,22 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'right',
   },
-  shazamMatch: {
-    fontSize: 11,
-    fontFamily: Fonts.medium,
-    color: Colors.primary,
+  shazamRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     marginTop: 2,
+  },
+  shazamEmoji: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  shazamText: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: Colors.textLight,
     textAlign: 'right',
-    writingDirection: 'ltr',
+    flexShrink: 1,
   },
   indicator: {
     width: 30,

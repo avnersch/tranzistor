@@ -28,6 +28,7 @@ export function HomeScreen() {
   const { data: allNowPlaying, refresh } = useAllNowPlaying(stationIds);
   const nowPlaying = allNowPlaying[player.currentStation?.id ?? ''] ?? null;
   const allShazam = useAllShazamMatches();
+  const isShazamLoading = Object.keys(allShazam).length === 0;
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -66,6 +67,7 @@ export function HomeScreen() {
         subtitle={allNowPlaying[item.id] || item.frequency}
         isSubtitleLoading={allNowPlaying[item.id] === undefined}
         shazamMatch={allShazam[item.id] ?? null}
+        isShazamLoading={isShazamLoading}
         onPress={() => handleStationPress(item)}
       />
     );

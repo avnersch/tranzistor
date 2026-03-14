@@ -96,10 +96,10 @@ export function PlayerBar({
         {shazamMatch && !isLoading && (
           <View style={styles.shazamRow}>
             <MarqueeText
-              text={`${shazamMatch.title}${shazamMatch.artist ? ` – ${shazamMatch.artist}` : ''}`}
-              style={styles.shazamText}
+              text={`${shazamMatch.artist}${shazamMatch.title ? ` – ${shazamMatch.title}` : ''}`}
+              style={styles.frequency}
             />
-            <Text style={styles.shazamText}>🎵 </Text>
+            <Text style={styles.shazamEmoji}>🎵 </Text>
           </View>
         )}
       </View>
@@ -205,11 +205,10 @@ const styles = StyleSheet.create({
     marginTop: 1,
     marginLeft: 12,
   },
-  shazamText: {
-    fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#7CB3F4',
-    textAlign: 'right',
+  shazamEmoji: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: Colors.playerTextSecondary,
     flexShrink: 0,
   },
   frequency: {
