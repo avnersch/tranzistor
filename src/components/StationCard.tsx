@@ -61,12 +61,9 @@ export function StationCard({
         {isShazamLoading ? (
           <ShimmerLine width={110} height={10} borderRadius={4} style={{ marginTop: 4, alignSelf: 'flex-end' }} />
         ) : shazamMatch ? (
-          <View style={styles.shazamRow}>
-            <Text style={styles.shazamText} numberOfLines={1}>
-              {shazamMatch.artist}{shazamMatch.title ? ` – ${shazamMatch.title}` : ''}
-            </Text>
-            <Text style={styles.shazamEmoji}>🎵 </Text>
-          </View>
+          <Text style={styles.shazamText} numberOfLines={1}>
+            {shazamMatch.artist}{shazamMatch.title ? ` – ${shazamMatch.title}` : ''}
+          </Text>
         ) : null}
       </View>
 
@@ -141,22 +138,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'right',
   },
-  shazamRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  shazamEmoji: {
-    fontSize: 12,
-    lineHeight: 16,
-  },
   shazamText: {
     fontSize: 12,
     fontFamily: Fonts.regular,
     color: Colors.textLight,
     textAlign: 'right',
-    flexShrink: 1,
+    marginTop: 2,
   },
   indicator: {
     width: 30,

@@ -99,7 +99,6 @@ export function PlayerBar({
               text={`${shazamMatch.artist}${shazamMatch.title ? ` – ${shazamMatch.title}` : ''}`}
               style={styles.frequency}
             />
-            <Text style={styles.shazamEmoji}>🎵 </Text>
           </View>
         )}
       </View>
@@ -204,12 +203,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginTop: 1,
     marginLeft: 12,
-  },
-  shazamEmoji: {
-    fontSize: 13,
-    fontFamily: Fonts.regular,
-    color: Colors.playerTextSecondary,
-    flexShrink: 0,
   },
   frequency: {
     fontSize: 13,
