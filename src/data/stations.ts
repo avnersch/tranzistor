@@ -64,6 +64,15 @@ export const stations: Station[] = [
     logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/KanKolMusic.svg',
   },
   {
+    id: 'reshet-gimel',
+    name: 'רשת ג׳',
+    frequency: '97.8 FM',
+    frequencyNum: 97.8,
+    streamUrl: 'https://27783.live.streamtheworld.com/KAN_GIMMEL.mp3',
+    color: '#F56000',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/KanGimel.svg/250px-KanGimel.svg.png',
+  },
+  {
     id: 'eco99',
     name: 'אקו 99',
     frequency: '99 FM',

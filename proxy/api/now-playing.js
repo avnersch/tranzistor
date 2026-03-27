@@ -187,6 +187,7 @@ const fetchers = {
   'radius-nostalgi': fetchRadiusNostalgi,
   'galei-tzahal': fetchGaleiTzahal,
   'kol-hamusika': makeKanFetcher(4518),
+  'reshet-gimel': makeKanFetcher(4490),
   'eco99': fetchEco99,
   'radio-tel-aviv': fetch102FM,
   '103fm': fetch103FM,

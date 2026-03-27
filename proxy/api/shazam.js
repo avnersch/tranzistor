@@ -11,6 +11,7 @@ const STREAM_URLS = {
   'radius-nostalgi': 'https://cdna.streamgates.net/radios-audio/Nostalgia_963fm/icecast.audio',
   'galei-tzahal': 'https://glzwizzlv.bynetcdn.com/glz_mp3',
   'kol-hamusika': 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_KOL_HAMUSICA.mp3',
+  'reshet-gimel': 'https://27783.live.streamtheworld.com/KAN_GIMMEL.mp3',
   'eco99': 'https://eco01.mediacast.co.il/ecolive/99fm_aac/icecast.audio',
   'radio-tel-aviv': 'https://cdn88.mediacast.co.il/102fm-tlv/102fm_mp3/icecast.audio',
   '103fm': 'https://cdn.cybercdn.live/103FM/Live/icecast.audio',
