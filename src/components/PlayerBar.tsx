@@ -99,6 +99,11 @@ export function PlayerBar({
               text={`${shazamMatch.artist}${shazamMatch.title ? ` – ${shazamMatch.title}` : ''}`}
               style={styles.frequency}
             />
+            <Image
+              source={require('../../assets/shazam-icon.png')}
+              style={styles.shazamIcon}
+              resizeMode="contain"
+            />
           </View>
         )}
       </View>
@@ -199,10 +204,16 @@ const styles = StyleSheet.create({
   },
   shazamRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'stretch',
     justifyContent: 'flex-end',
     marginTop: 1,
     marginLeft: 12,
+  },
+  shazamIcon: {
+    width: 14,
+    height: 14,
+    marginLeft: 4,
   },
   frequency: {
     fontSize: 13,

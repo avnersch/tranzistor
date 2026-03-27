@@ -66,8 +66,6 @@ export function HomeScreen() {
         isLoading={isActive && player.isLoading}
         subtitle={allNowPlaying[item.id] || item.frequency}
         isSubtitleLoading={allNowPlaying[item.id] === undefined}
-        shazamMatch={allShazam[item.id] ?? null}
-        isShazamLoading={isShazamLoading}
         onPress={() => handleStationPress(item)}
       />
     );
@@ -105,8 +103,9 @@ export function HomeScreen() {
         data={stations}
         renderItem={renderStation}
         keyExtractor={(item) => item.id}
-        numColumns={1}
+        numColumns={2}
         contentContainerStyle={styles.list}
+        columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
         extraData={{ allNowPlaying, allShazam }}
         refreshControl={
@@ -193,5 +192,8 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 16,
     paddingHorizontal: 8,
+  },
+  row: {
+    flexDirection: 'row-reverse',
   },
 });

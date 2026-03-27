@@ -179,9 +179,103 @@ function makeKanFetcher(channelId) {
   };
 }
 
+// --- Radius 100FM ---
+// Day names in the schedule HTML map to JS getDay()
+const HEBREW_DAY_TO_COLLAPSE = {
+  0: 1, // Sunday → collapse1
+  1: 2, // Monday → collapse2
+  2: 3, // Tuesday → collapse3
+  3: 4, // Wednesday → collapse4
+  4: 5, // Thursday → collapse5
+  5: 6, // Friday → collapse6
+  6: 7, // Saturday → collapse7
+};
+
+function parse100FMSchedule(html) {
+  const schedules = {};
+  for (let dow = 0; dow <= 6; dow++) {
+    const collapseId = HEBREW_DAY_TO_COLLAPSE[dow];
+    const sectionRe = new RegExp(
+      `id="collapse${collapseId}"[\\s\\S]*?<ul>([\\s\\S]*?)</ul>`
+    );
+    const sectionMatch = html.match(sectionRe);
+    if (!sectionMatch) { schedules[dow] = []; continue; }
+
+    const shows = [];
+    const liRe = /<li[^>]*>\s*<span>(\d{1,2}:\d{2})<\/span>\s*<a[^>]*>\s*<strong>([^<]+)<\/strong>([^<]*)/g;
+    let m;
+    while ((m = liRe.exec(sectionMatch[1])) !== null) {
+      const minutes = parseHHMM(m[1]);
+      const name = m[2].trim();
+      const extra = m[3].trim();
+      const title = extra ? `${name} ${extra}` : name;
+      shows.push({ minutes, title });
+    }
+    schedules[dow] = shows;
+  }
+  return schedules;
+}
+
+function findCurrent100FMShow(schedules) {
+  const now = getIsraelTime();
+  const todayDow = now.getDay();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const yesterdayDow = (todayDow + 6) % 7;
+
+  const todayShows = schedules[todayDow] || [];
+  const yesterdayShows = schedules[yesterdayDow] || [];
+
+  // Split each day's list into "same-day" and "overflow" (next-day) shows.
+  // Shows are in broadcast order; when time decreases or is ≥ 1440 (24:00),
+  // that show and everything after it belongs to the next calendar day.
+  function splitShows(shows) {
+    let wrapIdx = shows.length;
+    for (let i = 1; i < shows.length; i++) {
+      if (shows[i].minutes >= 1440 || shows[i].minutes < shows[i - 1].minutes) {
+        wrapIdx = i;
+        break;
+      }
+    }
+    return {
+      sameDay: shows.slice(0, wrapIdx),
+      overflow: shows.slice(wrapIdx).map(s => ({
+        ...s,
+        effectiveMinutes: s.minutes >= 1440 ? s.minutes - 1440 : s.minutes,
+      })),
+    };
+  }
+
+  // Try today's same-day shows (last one with start ≤ now)
+  const today = splitShows(todayShows);
+  let best = null;
+  for (const s of today.sameDay) {
+    if (s.minutes <= nowMinutes) best = s;
+  }
+  if (best) return best.title;
+
+  // Try yesterday's overflow shows (early-morning today)
+  const yesterday = splitShows(yesterdayShows);
+  for (const s of yesterday.overflow) {
+    if (s.effectiveMinutes <= nowMinutes) best = s;
+  }
+  if (best) return best.title;
+
+  return null;
+}
+
+async function fetchRadius100FM() {
+  const res = await fetchUp('https://www.100fm.co.il/broadcast/', {
+    headers: { Accept: 'text/html' },
+  });
+  const html = await res.text();
+  const schedules = parse100FMSchedule(html);
+  return findCurrent100FMShow(schedules);
+}
+
 // --- Registry ---
 const fetchers = {
   'kan88': makeKanFetcher(4444),
+  'lev-hamedina': async () => null,
   'galgalatz': fetchGalgalatz,
   'reshet-bet': makeKanFetcher(4483),
   'radius-nostalgi': fetchRadiusNostalgi,
@@ -189,6 +283,7 @@ const fetchers = {
   'kol-hamusika': makeKanFetcher(4518),
   'reshet-gimel': makeKanFetcher(4490),
   'eco99': fetchEco99,
+  'radius-100fm': fetchRadius100FM,
   'radio-tel-aviv': fetch102FM,
   '103fm': fetch103FM,
 };

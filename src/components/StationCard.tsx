@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { Station } from '../data/stations';
 import { STATION_LOGOS } from '../data/stationLogos';
-import { ShazamMatch } from '../hooks/useShazamMatch';
 import { Colors, Fonts } from '../theme/colors';
 import { AnimatedBars } from './AnimatedBars';
 import { ShimmerLine } from './ShimmerLine';
@@ -20,8 +19,6 @@ interface Props {
   isLoading: boolean;
   subtitle: string;
   isSubtitleLoading?: boolean;
-  shazamMatch?: ShazamMatch | null;
-  isShazamLoading?: boolean;
   onPress: () => void;
 }
 
@@ -31,8 +28,6 @@ export function StationCard({
   isLoading,
   subtitle,
   isSubtitleLoading,
-  shazamMatch,
-  isShazamLoading,
   onPress,
 }: Props) {
   return (
@@ -41,40 +36,31 @@ export function StationCard({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.logoContainer}>
-        <Image
-          source={STATION_LOGOS[station.id] ?? { uri: station.logoUrl }}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
+      <Image
+        source={STATION_LOGOS[station.id] ?? { uri: station.logoUrl }}
+        style={styles.logo}
+        resizeMode="contain"
+      />
 
-      <View style={styles.info}>
+      <View style={styles.nameRow}>
+        {isPlaying && (
+          <View style={styles.indicator}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color={Colors.primary} />
+            ) : (
+              <AnimatedBars color={Colors.primary} size={14} />
+            )}
+          </View>
+        )}
         <Text style={[styles.name, isPlaying && styles.nameActive]} numberOfLines={1}>
           {station.name}
         </Text>
-        {isSubtitleLoading ? (
-          <ShimmerLine width={90} height={10} borderRadius={4} style={{ marginTop: 4, alignSelf: 'flex-end' }} />
-        ) : (
-          <Text style={styles.frequency} numberOfLines={1}>{subtitle}</Text>
-        )}
-        {isShazamLoading ? (
-          <ShimmerLine width={110} height={10} borderRadius={4} style={{ marginTop: 4, alignSelf: 'flex-end' }} />
-        ) : shazamMatch ? (
-          <Text style={styles.shazamText} numberOfLines={1}>
-            {shazamMatch.artist}{shazamMatch.title ? ` – ${shazamMatch.title}` : ''}
-          </Text>
-        ) : null}
       </View>
 
-      {isPlaying && (
-        <View style={styles.indicator}>
-          {isLoading ? (
-            <ActivityIndicator size="small" color={Colors.primary} />
-          ) : (
-            <AnimatedBars color={Colors.primary} size={22} />
-          )}
-        </View>
+      {isSubtitleLoading ? (
+        <ShimmerLine width={80} height={10} borderRadius={4} style={{ marginTop: 4 }} />
+      ) : (
+        <Text style={styles.subtitle} numberOfLines={2}>{subtitle}</Text>
       )}
     </TouchableOpacity>
   );
@@ -82,13 +68,14 @@ export function StationCard({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 12,
-    marginHorizontal: 16,
-    marginVertical: 5,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    margin: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
@@ -96,59 +83,42 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1.5,
     borderColor: 'transparent',
+    minHeight: 140,
   },
   cardActive: {
     backgroundColor: '#EBF5FF',
     borderColor: Colors.primary,
   },
-  logoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#C8D8E8',
-  },
   logo: {
-    width: 40,
-    height: 40,
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  info: {
-    flex: 1,
-    marginLeft: 10,
-    marginRight: 4,
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
   name: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: Fonts.bold,
     color: Colors.textPrimary,
-    textAlign: 'right',
-    writingDirection: 'rtl',
+    textAlign: 'center',
+    flexShrink: 1,
   },
   nameActive: {
     color: Colors.primary,
   },
-  frequency: {
-    fontSize: 12,
+  subtitle: {
+    fontSize: 11,
     fontFamily: Fonts.regular,
     color: Colors.textLight,
-    marginTop: 2,
-    textAlign: 'right',
-  },
-  shazamText: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: Colors.textLight,
-    textAlign: 'right',
-    marginTop: 2,
+    marginTop: 3,
+    textAlign: 'center',
   },
   indicator: {
-    width: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 4,
+    marginRight: 2,
   },
 });

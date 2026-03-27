@@ -2,6 +2,7 @@ import { ImageSourcePropType } from 'react-native';
 
 export const STATION_LOGOS: Record<string, ImageSourcePropType> = {
   'kan88': require('../../assets/stations/kan88.png'),
+  'lev-hamedina': require('../../assets/stations/lev-hamedina.png'),
   'galgalatz': require('../../assets/stations/galgalatz.png'),
   'reshet-bet': require('../../assets/stations/reshet-bet.png'),
   'radius-nostalgi': require('../../assets/stations/radius-nostalgi.png'),
@@ -9,6 +10,7 @@ export const STATION_LOGOS: Record<string, ImageSourcePropType> = {
   'kol-hamusika': require('../../assets/stations/kol-hamusika.png'),
   'reshet-gimel': require('../../assets/stations/reshet-gimel.png'),
   'eco99': require('../../assets/stations/eco99.png'),
+  'radius-100fm': require('../../assets/stations/radius-100fm.png'),
   'radio-tel-aviv': require('../../assets/stations/radio-tel-aviv.png'),
   '103fm': require('../../assets/stations/103fm.png'),
 };

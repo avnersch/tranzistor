@@ -19,6 +19,15 @@ export const stations: Station[] = [
     logoUrl: 'https://upload.wikimedia.org/wikipedia/he/0/09/Kan88Logo.svg',
   },
   {
+    id: 'lev-hamedina',
+    name: 'רדיו לב המדינה',
+    frequency: '91 FM',
+    frequencyNum: 91,
+    streamUrl: 'https://cdn.cybercdn.live/Lev_Hamedina/Audio/icecast.audio',
+    color: '#1565C0',
+    logoUrl: 'https://www.levhamedina.co.il/wp-content/uploads/2020/01/logo.png',
+  },
+  {
     id: 'galgalatz',
     name: 'גלגל״צ',
     frequency: '91.8 FM',
@@ -80,6 +89,15 @@ export const stations: Station[] = [
     streamUrl: 'https://eco01.mediacast.co.il/ecolive/99fm_aac/icecast.audio',
     color: '#00BCD4',
     logoUrl: 'https://upload.wikimedia.org/wikipedia/he/0/0a/Eco_99_fm.svg',
+  },
+  {
+    id: 'radius-100fm',
+    name: 'רדיוס 100FM',
+    frequency: '100 FM',
+    frequencyNum: 100,
+    streamUrl: 'https://cdn.cybercdn.live/Radios_100FM/Audio/icecast.audio',
+    color: '#2E7BBF',
+    logoUrl: 'https://www.100fm.co.il/wp-content/themes/developer_flavor/assets/img/100fm-logo.png',
   },
   {
     id: 'radio-tel-aviv',
