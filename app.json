@@ -21,6 +21,7 @@
     },
     "android": {
       "package": "com.tranzistor.radio",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
