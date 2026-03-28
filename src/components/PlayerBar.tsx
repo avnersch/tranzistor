@@ -85,7 +85,7 @@ export function PlayerBar({
         </Text>
         {nowPlaying && !isLoading ? (
           <View style={styles.nowPlayingRow}>
-            <MarqueeText text={nowPlaying} style={styles.frequency} />
+            <Text style={styles.frequency} numberOfLines={1}>{nowPlaying}</Text>
             <Text style={styles.frequency}>עכשיו בשידור: </Text>
           </View>
         ) : (

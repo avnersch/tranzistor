@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, Text, TextStyle, LayoutChangeEvent } from 'react-native';
 
 interface Props {
@@ -6,94 +6,89 @@ interface Props {
   style?: TextStyle;
 }
 
-const SPEED = 30;
-const PAUSE_MS = 2500;
-const RETURN_SPEED = 60;
+const GAP = 48;
+const SPEED = 35;
+const PAUSE_MS = 1500;
 
 export function MarqueeText({ text, style }: Props) {
-  const containerWidth = useRef(0);
-  const textWidth = useRef(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [textWidth, setTextWidth] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
-  const [needsMarquee, setNeedsMarquee] = useState(false);
-  const [measured, setMeasured] = useState(false);
+  const textKey = useRef(text);
 
-  const startAnimation = useCallback(() => {
+  const needsMarquee = textWidth > containerWidth && containerWidth > 0;
+
+  if (text !== textKey.current) {
+    textKey.current = text;
     animRef.current?.stop();
-    const overflow = textWidth.current - containerWidth.current;
-    if (overflow <= 0 || containerWidth.current === 0) {
-      setNeedsMarquee(false);
-      translateX.setValue(0);
-      return;
-    }
-    setNeedsMarquee(true);
+    translateX.setValue(0);
+  }
 
-    const scrollDuration = (overflow / SPEED) * 1000;
-    const returnDuration = (overflow / RETURN_SPEED) * 1000;
+  useEffect(() => {
+    animRef.current?.stop();
+    translateX.setValue(0);
 
-    const loop = Animated.sequence([
-      Animated.delay(PAUSE_MS),
-      Animated.timing(translateX, {
-        toValue: overflow,
-        duration: scrollDuration,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.delay(PAUSE_MS),
-      Animated.timing(translateX, {
-        toValue: 0,
-        duration: returnDuration,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-    ]);
+    if (!needsMarquee) return;
 
-    animRef.current = Animated.loop(loop);
-    animRef.current.start();
-  }, [translateX]);
+    const scrollDistance = textWidth + GAP;
+    const duration = (scrollDistance / SPEED) * 1000;
+
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.delay(PAUSE_MS),
+        Animated.timing(translateX, {
+          toValue: scrollDistance,
+          duration,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    animRef.current = anim;
+    anim.start();
+
+    return () => {
+      anim.stop();
+    };
+  }, [needsMarquee, textWidth, containerWidth]);
 
   useEffect(() => {
     return () => { animRef.current?.stop(); };
   }, []);
 
-  useEffect(() => {
-    animRef.current?.stop();
-    translateX.setValue(0);
-    setNeedsMarquee(false);
-    setMeasured(false);
-    textWidth.current = 0;
-  }, [text, translateX]);
-
-  useEffect(() => {
-    if (measured) startAnimation();
-  }, [measured, startAnimation]);
-
   const onContainerLayout = (e: LayoutChangeEvent) => {
-    containerWidth.current = e.nativeEvent.layout.width;
+    setContainerWidth(e.nativeEvent.layout.width);
   };
 
-  const onInnerLayout = (e: LayoutChangeEvent) => {
-    textWidth.current = e.nativeEvent.layout.width;
-    setMeasured(true);
+  const onTextLayout = (e: LayoutChangeEvent) => {
+    setTextWidth(e.nativeEvent.layout.width);
   };
 
   return (
     <View style={localStyles.container} onLayout={onContainerLayout}>
-      {/* Visible scrolling text */}
       <Animated.View
         style={[
-          localStyles.scrollable,
+          localStyles.track,
           needsMarquee && { transform: [{ translateX }] },
         ]}
       >
         <Text style={[style, localStyles.noWrap]} numberOfLines={1}>
           {text}
         </Text>
+        {needsMarquee && (
+          <>
+            <View style={{ width: GAP }} />
+            <Text style={[style, localStyles.noWrap]} numberOfLines={1}>
+              {text}
+            </Text>
+          </>
+        )}
       </Animated.View>
 
-      {/* Hidden measurer: no width constraint, captures full text width */}
       <View style={localStyles.measurer} pointerEvents="none">
-        <Text style={[style, localStyles.noWrap]} onLayout={onInnerLayout}>
+        <Text style={[style, localStyles.noWrap]} onLayout={onTextLayout}>
           {text}
         </Text>
       </View>
@@ -106,8 +101,8 @@ const localStyles = StyleSheet.create({
     overflow: 'hidden',
     flex: 1,
   },
-  scrollable: {
-    flexDirection: 'row',
+  track: {
+    flexDirection: 'row-reverse',
     alignSelf: 'flex-end',
   },
   noWrap: {
