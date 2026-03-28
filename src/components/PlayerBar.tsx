@@ -85,7 +85,7 @@ export function PlayerBar({
         </Text>
         {nowPlaying && !isLoading ? (
           <View style={styles.nowPlayingRow}>
-            <Text style={styles.frequency} numberOfLines={1}>{nowPlaying}</Text>
+            <Text style={[styles.frequency, styles.nowPlayingText]} numberOfLines={1}>{nowPlaying}</Text>
             <Text style={styles.frequency}>עכשיו בשידור: </Text>
           </View>
         ) : (
@@ -201,6 +201,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginTop: 2,
     marginLeft: 12,
+  },
+  nowPlayingText: {
+    flex: 1,
   },
   shazamRow: {
     flexDirection: 'row',

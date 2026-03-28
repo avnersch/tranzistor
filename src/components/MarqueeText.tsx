@@ -36,6 +36,11 @@ export function MarqueeText({ text, style }: Props) {
 
     const anim = Animated.loop(
       Animated.sequence([
+        Animated.timing(translateX, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
         Animated.delay(PAUSE_MS),
         Animated.timing(translateX, {
           toValue: scrollDistance,
