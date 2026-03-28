@@ -19,9 +19,10 @@ let useNativeAudio: (() => {
   stop: () => Promise<void>;
   togglePlayPause: () => Promise<void>;
   updateMetadata: (info: NowPlayingInfo) => void;
+  setStation: (station: Station) => void;
 }) | null = null;
 
-let useWebAudio: typeof useNativeAudio = null;
+let useWebAudio: typeof useNativeAudio | null = null;
 
 // --- Web implementation (expo-av) ---
 function createWebAudioHook() {
@@ -108,7 +109,12 @@ function createWebAudioHook() {
       // Web uses useMediaSession hook instead
     }, []);
 
-    return { state, play, stop, togglePlayPause, updateMetadata };
+    const setStation = useCallback((station: Station) => {
+      generationRef.current++;
+      setState((prev: AudioPlayerState) => ({ ...prev, currentStation: station, isPlaying: false, isLoading: false, error: null }));
+    }, []);
+
+    return { state, play, stop, togglePlayPause, updateMetadata, setStation };
   };
 }
 
@@ -224,6 +230,13 @@ function createNativeAudioHook() {
       }
     }, [applyMetadata]);
 
+    const setStation = useCallback((station: Station) => {
+      stationRef.current = station;
+      setCurrentStation(station);
+      setIsLoading(false);
+      setError(null);
+    }, []);
+
     const state: AudioPlayerState = {
       currentStation,
       isPlaying,
@@ -231,7 +244,7 @@ function createNativeAudioHook() {
       error,
     };
 
-    return { state, play, stop, togglePlayPause, updateMetadata };
+    return { state, play, stop, togglePlayPause, updateMetadata, setStation };
   };
 }
 
@@ -240,11 +253,11 @@ export function useAudioPlayer() {
 
   if (isWeb) {
     if (!useWebAudio) useWebAudio = createWebAudioHook();
-    const { state, play, stop, togglePlayPause, updateMetadata } = useWebAudio();
-    return { ...state, play, stop, togglePlayPause, updateMetadata };
+    const { state, play, stop, togglePlayPause, updateMetadata, setStation } = useWebAudio!();
+    return { ...state, play, stop, togglePlayPause, updateMetadata, setStation };
   } else {
     if (!useNativeAudio) useNativeAudio = createNativeAudioHook();
-    const { state, play, stop, togglePlayPause, updateMetadata } = useNativeAudio();
-    return { ...state, play, stop, togglePlayPause, updateMetadata };
+    const { state, play, stop, togglePlayPause, updateMetadata, setStation } = useNativeAudio!();
+    return { ...state, play, stop, togglePlayPause, updateMetadata, setStation };
   }
 }

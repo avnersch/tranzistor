@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -15,16 +15,19 @@ import { StatusBar } from 'expo-status-bar';
 import { stations, Station } from '../data/stations';
 import { StationCard } from '../components/StationCard';
 import { PlayerBar } from '../components/PlayerBar';
+import { CastModal } from '../components/CastModal';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useAllNowPlaying } from '../hooks/useNowPlaying';
 import { useMediaSession } from '../hooks/useMediaSession';
 import { useAllShazamMatches } from '../hooks/useShazamMatch';
+import { useCast } from '../hooks/useCast';
 import { Colors, Fonts } from '../theme/colors';
 
 const stationIds = stations.map((s) => s.id);
 
 export function HomeScreen() {
   const player = useAudioPlayer();
+  const cast = useCast();
   const { data: allNowPlaying, refresh } = useAllNowPlaying(stationIds);
   const nowPlaying = allNowPlaying[player.currentStation?.id ?? ''] ?? null;
   const allShazam = useAllShazamMatches();
@@ -41,15 +44,58 @@ export function HomeScreen() {
     player.updateMetadata({ nowPlaying });
   }, [nowPlaying, player.updateMetadata]);
 
+  const [castPaused, setCastPaused] = useState(false);
+
+  const handleTogglePlayPause = useCallback(() => {
+    if (cast.isCasting) {
+      if (castPaused) {
+        cast.castPlay();
+        setCastPaused(false);
+      } else {
+        cast.castPause();
+        setCastPaused(true);
+      }
+    } else {
+      player.togglePlayPause();
+    }
+  }, [cast.isCasting, castPaused, cast.castPlay, cast.castPause, player.togglePlayPause]);
+
   useMediaSession({
     station: player.currentStation,
     isPlaying: player.isPlaying,
     nowPlaying,
-    onTogglePlayPause: player.togglePlayPause,
+    onTogglePlayPause: handleTogglePlayPause,
     onStop: player.stop,
   });
 
+  const wasCastingRef = useRef(false);
+
+  useEffect(() => {
+    if (cast.isCasting && player.currentStation) {
+      if (player.isPlaying) {
+        player.togglePlayPause();
+      }
+      cast.castMedia(player.currentStation, nowPlaying);
+      setCastPaused(false);
+    }
+
+    if (!cast.isCasting) {
+      setCastPaused(false);
+      if (wasCastingRef.current && player.currentStation) {
+        player.play(player.currentStation);
+      }
+    }
+
+    wasCastingRef.current = cast.isCasting;
+  }, [cast.isCasting]);
+
   const handleStationPress = (station: Station) => {
+    if (cast.isCasting) {
+      player.setStation(station);
+      cast.castMedia(station, allNowPlaying[station.id] ?? null);
+      setCastPaused(false);
+      return;
+    }
     if (player.currentStation?.id === station.id && player.isPlaying) {
       player.togglePlayPause();
     } else {
@@ -57,12 +103,14 @@ export function HomeScreen() {
     }
   };
 
+  const effectiveIsPlaying = cast.isCasting ? !castPaused : player.isPlaying;
+
   const renderStation = ({ item }: { item: Station }) => {
     const isActive = player.currentStation?.id === item.id;
     return (
       <StationCard
         station={item}
-        isPlaying={isActive && (player.isPlaying || player.isLoading)}
+        isPlaying={isActive && (effectiveIsPlaying || player.isLoading)}
         isLoading={isActive && player.isLoading}
         subtitle={allNowPlaying[item.id] || item.frequency}
         isSubtitleLoading={allNowPlaying[item.id] === undefined}
@@ -120,12 +168,24 @@ export function HomeScreen() {
 
       <PlayerBar
         station={player.currentStation}
-        isPlaying={player.isPlaying}
+        isPlaying={effectiveIsPlaying}
         isLoading={player.isLoading}
         nowPlaying={nowPlaying}
         shazamMatch={allShazam[player.currentStation?.id ?? ''] ?? null}
-        onTogglePlayPause={player.togglePlayPause}
-        onStop={player.stop}
+        onTogglePlayPause={handleTogglePlayPause}
+        onCast={cast.openModal}
+        isCasting={cast.isCasting}
+        isConnecting={cast.isConnecting}
+      />
+
+      <CastModal
+        visible={cast.modalVisible}
+        devices={cast.devices}
+        isCasting={cast.isCasting}
+        connectedDeviceName={cast.connectedDeviceName}
+        onSelectDevice={cast.connectToDevice}
+        onDisconnect={cast.disconnect}
+        onClose={cast.closeModal}
       />
     </SafeAreaView>
   );

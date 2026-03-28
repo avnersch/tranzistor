@@ -20,7 +20,9 @@ interface Props {
   nowPlaying: string | null;
   shazamMatch?: ShazamMatch | null;
   onTogglePlayPause: () => void;
-  onStop: () => void;
+  onCast: () => void;
+  isCasting: boolean;
+  isConnecting: boolean;
 }
 
 function PlayIcon() {
@@ -40,10 +42,6 @@ function PauseIcon() {
   );
 }
 
-function StopIcon() {
-  return <View style={iconStyles.stopSquare} />;
-}
-
 export function PlayerBar({
   station,
   isPlaying,
@@ -51,18 +49,30 @@ export function PlayerBar({
   nowPlaying,
   shazamMatch,
   onTogglePlayPause,
-  onStop,
+  onCast,
+  isCasting,
+  isConnecting,
 }: Props) {
   if (!station) return null;
+
+  const castIconSource = isConnecting
+    ? require('../../assets/cast-icon-connecting.gif')
+    : isCasting
+      ? require('../../assets/cast-connected-icon.png')
+      : require('../../assets/cast-icon.png');
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={onStop}
-        style={styles.stopButton}
+        onPress={onCast}
+        style={styles.castButton}
         activeOpacity={0.7}
       >
-        <StopIcon />
+        <Image
+          source={castIconSource}
+          style={styles.castIcon}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -147,12 +157,6 @@ const iconStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 1,
   },
-  stopSquare: {
-    width: 12,
-    height: 12,
-    backgroundColor: Colors.playerTextSecondary,
-    borderRadius: 2,
-  },
 });
 
 const styles = StyleSheet.create({
@@ -234,12 +238,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10,
   },
-  stopButton: {
+  castButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  castIcon: {
+    width: 22,
+    height: 22,
   },
 });
