@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, View, Text, TextStyle, LayoutChangeEvent } from 'react-native';
+import {
+  Animated,
+  Easing,
+  LayoutChangeEvent,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+} from 'react-native';
 
 interface Props {
   text: string;
@@ -15,14 +23,15 @@ export function MarqueeText({ text, style }: Props) {
   const [textWidth, setTextWidth] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
-  const textKey = useRef(text);
+  const prevText = useRef(text);
 
-  const needsMarquee = textWidth > containerWidth && containerWidth > 0;
+  const needsMarquee = textWidth > containerWidth && containerWidth > 0 && textWidth > 0;
 
-  if (text !== textKey.current) {
-    textKey.current = text;
+  if (text !== prevText.current) {
+    prevText.current = text;
     animRef.current?.stop();
     translateX.setValue(0);
+    setTextWidth(0);
   }
 
   useEffect(() => {
@@ -60,40 +69,46 @@ export function MarqueeText({ text, style }: Props) {
   }, [needsMarquee, textWidth, containerWidth]);
 
   useEffect(() => {
-    return () => { animRef.current?.stop(); };
+    return () => {
+      animRef.current?.stop();
+    };
   }, []);
 
   const onContainerLayout = (e: LayoutChangeEvent) => {
     setContainerWidth(e.nativeEvent.layout.width);
   };
 
-  const onTextLayout = (e: LayoutChangeEvent) => {
-    setTextWidth(e.nativeEvent.layout.width);
+  const onMeasure = (e: LayoutChangeEvent) => {
+    const w = e.nativeEvent.layout.width;
+    if (w > 0) setTextWidth(w);
   };
 
   return (
-    <View style={localStyles.container} onLayout={onContainerLayout}>
+    <View style={styles.container} onLayout={onContainerLayout}>
       <Animated.View
         style={[
-          localStyles.track,
+          styles.track,
           needsMarquee && { transform: [{ translateX }] },
         ]}
       >
-        <Text style={[style, localStyles.noWrap]} numberOfLines={1}>
+        <Text
+          style={[style, styles.noWrap, needsMarquee && { width: textWidth }]}
+          numberOfLines={needsMarquee ? undefined : 1}
+        >
           {text}
         </Text>
         {needsMarquee && (
           <>
             <View style={{ width: GAP }} />
-            <Text style={[style, localStyles.noWrap]} numberOfLines={1}>
+            <Text style={[style, styles.noWrap, { width: textWidth }]}>
               {text}
             </Text>
           </>
         )}
       </Animated.View>
 
-      <View style={localStyles.measurer} pointerEvents="none">
-        <Text style={[style, localStyles.noWrap]} onLayout={onTextLayout}>
+      <View style={styles.measurerWrapper} pointerEvents="none">
+        <Text style={style} onLayout={onMeasure}>
           {text}
         </Text>
       </View>
@@ -101,7 +116,7 @@ export function MarqueeText({ text, style }: Props) {
   );
 }
 
-const localStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
     flex: 1,
@@ -113,10 +128,10 @@ const localStyles = StyleSheet.create({
   noWrap: {
     flexShrink: 0,
   },
-  measurer: {
+  measurerWrapper: {
     position: 'absolute',
     opacity: 0,
-    flexDirection: 'row',
-    right: 0,
+    width: 99999,
+    alignItems: 'flex-start',
   },
 });
