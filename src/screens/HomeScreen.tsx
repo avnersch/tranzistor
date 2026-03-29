@@ -71,29 +71,43 @@ export function HomeScreen() {
   const wasCastingRef = useRef(false);
 
   useEffect(() => {
-    if (cast.isCasting && player.currentStation) {
-      if (player.isPlaying) {
-        player.togglePlayPause();
+    const loadCastMedia = async () => {
+      if (cast.isCasting && player.currentStation) {
+        // Stop local playback when casting starts
+        if (player.isPlaying) {
+          player.togglePlayPause();
+        }
+        // Load media on the cast device with retry logic
+        const success = await cast.castMedia(player.currentStation, nowPlaying);
+        if (success) {
+          setCastPaused(false);
+        } else {
+          // Media failed to load - disconnect to avoid broken state
+          cast.disconnect();
+        }
       }
-      cast.castMedia(player.currentStation, nowPlaying);
-      setCastPaused(false);
-    }
 
-    if (!cast.isCasting) {
-      setCastPaused(false);
-      if (wasCastingRef.current && player.currentStation) {
-        player.play(player.currentStation);
+      if (!cast.isCasting) {
+        setCastPaused(false);
+        // Resume local playback when casting ends
+        if (wasCastingRef.current && player.currentStation) {
+          player.play(player.currentStation);
+        }
       }
-    }
 
-    wasCastingRef.current = cast.isCasting;
+      wasCastingRef.current = cast.isCasting;
+    };
+
+    loadCastMedia();
   }, [cast.isCasting]);
 
-  const handleStationPress = (station: Station) => {
+  const handleStationPress = async (station: Station) => {
     if (cast.isCasting) {
       player.setStation(station);
-      cast.castMedia(station, allNowPlaying[station.id] ?? null);
-      setCastPaused(false);
+      const success = await cast.castMedia(station, allNowPlaying[station.id] ?? null);
+      if (success) {
+        setCastPaused(false);
+      }
       return;
     }
     if (player.currentStation?.id === station.id && player.isPlaying) {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Alert } from 'react-native';
 import { Station } from '../data/stations';
 
@@ -17,7 +17,7 @@ export interface CastState {
   closeModal: () => void;
   connectToDevice: (deviceId: string) => void;
   disconnect: () => void;
-  castMedia: (station: Station, nowPlaying?: string | null) => void;
+  castMedia: (station: Station, nowPlaying?: string | null) => Promise<boolean>;
   castPlay: () => void;
   castPause: () => void;
 }
@@ -43,6 +43,9 @@ function useNativeCast(): CastState {
   const [connectedDeviceName, setConnectedDeviceName] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  // Store pending device name until session actually starts
+  const pendingDeviceNameRef = useRef<string | null>(null);
+
   useEffect(() => {
     CastContext.getPlayServicesState().then((state: number) => {
       if (state && state !== PlayServicesState.SUCCESS) {
@@ -59,15 +62,45 @@ function useNativeCast(): CastState {
     }
   }, [hookCastState, isCasting]);
 
-  // Native event listener for remote disconnect
+  // Native event listeners for session lifecycle
   useEffect(() => {
     try {
       const sm = GoogleCast.default.getSessionManager();
-      const sub = sm.onSessionEnded(() => {
+
+      // Session successfully started
+      const startSub = sm.onSessionStarted(() => {
+        setIsConnecting(false);
+        setIsCasting(true);
+        // Use pending device name, or fallback to a default
+        setConnectedDeviceName(pendingDeviceNameRef.current || 'מכשיר מחובר');
+        pendingDeviceNameRef.current = null;
+      });
+
+      // Session failed to start
+      const failSub = sm.onSessionStartFailed((error: unknown) => {
+        console.warn('Cast session failed to start:', error);
+        setIsConnecting(false);
+        setIsCasting(false);
+        setConnectedDeviceName(null);
+        pendingDeviceNameRef.current = null;
+        Alert.alert(
+          'החיבור נכשל',
+          'לא הצלחנו להתחבר למכשיר. נסה שוב.',
+          [{ text: 'אישור' }]
+        );
+      });
+
+      // Session ended (remote disconnect or user disconnect)
+      const endSub = sm.onSessionEnded(() => {
         setIsCasting(false);
         setConnectedDeviceName(null);
       });
-      return () => { try { sub?.remove?.(); } catch {} };
+
+      return () => {
+        try { startSub?.remove?.(); } catch {}
+        try { failSub?.remove?.(); } catch {}
+        try { endSub?.remove?.(); } catch {}
+      };
     } catch {
       return undefined;
     }
@@ -98,22 +131,32 @@ function useNativeCast(): CastState {
     }
   }, [isConnecting, hookClient]);
 
-  // Timeout: stop showing connecting after 15s
+  // Timeout: stop showing connecting spinner after 20s
+  // Don't clear pendingDeviceNameRef - the session might still start afterward (slow devices like Mi Box)
+  // Don't show alert - just silently stop the spinner, connection may still succeed
   useEffect(() => {
     if (!isConnecting) return;
-    const timeout = setTimeout(() => setIsConnecting(false), 15000);
+    const timeout = setTimeout(() => {
+      setIsConnecting(false);
+      // Note: Don't clear pendingDeviceNameRef here - onSessionStarted may still fire
+    }, 20000);
     return () => clearTimeout(timeout);
   }, [isConnecting]);
 
   const connectToDevice = useCallback((deviceId: string) => {
     const device = hookDevices.find((d: CastDevice) => d.deviceId === deviceId);
+    // Store device name - will be used when session actually starts
+    pendingDeviceNameRef.current = device?.friendlyName ?? 'Unknown Device';
+    setIsConnecting(true);
+    setModalVisible(false);
+    // Don't set isCasting here - wait for onSessionStarted event
     try {
       GoogleCast.default.getSessionManager().startSession(deviceId);
-    } catch {}
-    setIsConnecting(true);
-    setIsCasting(true);
-    setConnectedDeviceName(device?.friendlyName ?? 'Unknown Device');
-    setModalVisible(false);
+    } catch (e) {
+      console.warn('Failed to start cast session:', e);
+      setIsConnecting(false);
+      pendingDeviceNameRef.current = null;
+    }
   }, [hookDevices]);
 
   const disconnect = useCallback(() => {
@@ -127,21 +170,46 @@ function useNativeCast(): CastState {
   }, []);
 
   const castMedia = useCallback(
-    (station: Station, nowPlaying?: string | null) => {
-      if (!hookClient) return;
-      hookClient.loadMedia({
-        mediaInfo: {
-          contentUrl: station.streamUrl,
-          contentType: 'audio/mpeg',
-          metadata: {
-            type: 'musicTrack',
-            title: nowPlaying || station.frequency,
-            artist: station.name,
-            images: [{ url: `${ARTWORK_BASE}${station.id}.png` }],
+    async (station: Station, nowPlaying?: string | null): Promise<boolean> => {
+      // Retry logic - RemoteMediaClient may not be immediately available after session starts
+      let client = hookClient;
+      let attempts = 0;
+      const maxAttempts = 10;
+      const retryDelay = 300;
+
+      while (!client && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        try {
+          client = GoogleCast.default.getClient();
+        } catch {}
+        attempts++;
+      }
+
+      if (!client) {
+        console.warn('Cast client not available after', maxAttempts, 'attempts');
+        return false;
+      }
+
+      try {
+        await client.loadMedia({
+          mediaInfo: {
+            contentUrl: station.streamUrl,
+            contentType: 'audio/mpeg',
+            streamType: 'live', // Important for live radio streams
+            metadata: {
+              type: 'musicTrack',
+              title: nowPlaying || station.frequency,
+              artist: station.name,
+              images: [{ url: `${ARTWORK_BASE}${station.id}.png` }],
+            },
           },
-        },
-        autoplay: true,
-      });
+          autoplay: true,
+        });
+        return true;
+      } catch (e) {
+        console.warn('Failed to load cast media:', e);
+        return false;
+      }
     },
     [hookClient],
   );
@@ -187,7 +255,7 @@ function useWebCast(): CastState {
     closeModal: () => setModalVisible(false),
     connectToDevice: () => {},
     disconnect: () => {},
-    castMedia: () => {},
+    castMedia: async () => false,
     castPlay: () => {},
     castPause: () => {},
   };

@@ -15,9 +15,11 @@
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
+          "audio",
           "audio"
         ]
-      }
+      },
+      "bundleIdentifier": "com.tranzistor.radio"
     },
     "android": {
       "package": "com.tranzistor.radio",
@@ -33,7 +35,8 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "android.permission.INTERNET",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -62,8 +65,11 @@
             "enableProguardInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
             "useLegacyPackaging": false,
-            "buildArchs": ["arm64-v8a"],
-            "extraProguardRules": "-keep class com.facebook.hermes.unicode.** { *; }\n-keep class com.facebook.jni.** { *; }\n-keep class expo.modules.** { *; }\n-dontwarn expo.modules.**\n-keep class com.google.android.gms.cast.** { *; }\n-keep class com.google.android.gms.cast.framework.** { *; }\n-dontwarn com.google.android.gms.cast.**\n-keep class com.reactnative.googlecast.** { *; }\n-dontwarn com.reactnative.googlecast.**\n-keep class androidx.mediarouter.** { *; }\n-dontwarn androidx.mediarouter.**"
+            "buildArchs": [
+              "arm64-v8a"
+            ],
+            "extraProguardRules": "-keep class com.facebook.hermes.unicode.** { *; }\n-keep class com.facebook.jni.** { *; }\n-keep class expo.modules.** { *; }\n-dontwarn expo.modules.**\n-keep class com.google.android.gms.cast.** { *; }\n-keep class com.google.android.gms.cast.framework.** { *; }\n-dontwarn com.google.android.gms.cast.**\n-keep class com.reactnative.googlecast.** { *; }\n-dontwarn com.reactnative.googlecast.**\n-keep class androidx.mediarouter.** { *; }\n-dontwarn androidx.mediarouter.**",
+            "enableMinifyInReleaseBuilds": true
           }
         }
       ]
