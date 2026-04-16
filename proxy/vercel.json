@@ -1,12 +1,17 @@
 {
   "rewrites": [
     { "source": "/api/now-playing", "destination": "/api/now-playing" },
-    { "source": "/api/shazam", "destination": "/api/shazam" }
+    { "source": "/api/shazam", "destination": "/api/shazam" },
+    { "source": "/api/cron/update-now-playing", "destination": "/api/cron/update-now-playing" },
+    { "source": "/api/cron/update-shazam", "destination": "/api/cron/update-shazam" }
   ],
   "functions": {
-    "api/shazam.js": {
+    "api/cron/update-shazam.js": {
       "memory": 1024,
       "maxDuration": 60
+    },
+    "api/cron/update-now-playing.js": {
+      "maxDuration": 30
     }
   }
 }

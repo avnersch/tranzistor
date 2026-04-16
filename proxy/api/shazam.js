@@ -1,90 +1,21 @@
-const { Shazam, s16LEToSamplesArray } = require('shazam-api');
-const { execFile } = require('child_process');
-const ffmpegPath = require('ffmpeg-static');
-const fs = require('fs');
-const path = require('path');
+const { Redis } = require('@upstash/redis');
 
-const STREAM_URLS = {
-  'kan88': 'https://24283.live.streamtheworld.com/KAN_88.mp3',
-  'lev-hamedina': 'https://cdn.cybercdn.live/Lev_Hamedina/Audio/icecast.audio',
-  'galgalatz': 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
-  'reshet-bet': 'https://24443.live.streamtheworld.com/KAN_BET.mp3',
-  'radius-nostalgi': 'https://cdna.streamgates.net/radios-audio/Nostalgia_963fm/icecast.audio',
-  'galei-tzahal': 'https://glzwizzlv.bynetcdn.com/glz_mp3',
-  'kol-hamusika': 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_KOL_HAMUSICA.mp3',
-  'reshet-gimel': 'https://27783.live.streamtheworld.com/KAN_GIMMEL.mp3',
-  'eco99': 'https://eco01.mediacast.co.il/ecolive/99fm_aac/icecast.audio',
-  'radius-100fm': 'https://cdn.cybercdn.live/Radios_100FM/Audio/icecast.audio',
-  'radio-tel-aviv': 'https://cdn88.mediacast.co.il/102fm-tlv/102fm_mp3/icecast.audio',
-  '103fm': 'https://cdn.cybercdn.live/103FM/Live/icecast.audio',
-};
-
-const SAMPLE_DURATION_S = 12;
-const CACHE_TTL_MS = 30_000;
-
-let cache = null;
-let cacheTime = 0;
-let pendingBatch = null;
-
-const shazam = new Shazam('Asia/Jerusalem');
-const origUrl = shazam.endpoint.url.bind(shazam.endpoint);
-shazam.endpoint.url = () => origUrl().replace('/en/US/', '/he/IL/');
-
-function captureStreamToPcm(stationId, streamUrl) {
-  const pcmPath = path.join('/tmp', `shazam_${stationId}.pcm`);
-
-  return new Promise((resolve, reject) => {
-    execFile(ffmpegPath, [
-      '-y',
-      '-t', String(SAMPLE_DURATION_S),
-      '-i', streamUrl,
-      '-ar', '16000', '-ac', '1', '-f', 's16le',
-      '-loglevel', 'error',
-      pcmPath,
-    ], { timeout: 25_000 }, (err) => {
-      if (err) return reject(err);
-      try {
-        const pcmBuffer = fs.readFileSync(pcmPath);
-        fs.unlinkSync(pcmPath);
-        resolve(pcmBuffer);
-      } catch (e) {
-        reject(e);
-      }
+let _redis;
+function getRedis() {
+  if (!_redis) {
+    _redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
     });
-  });
+  }
+  return _redis;
 }
 
-async function recognizeStation(stationId) {
-  const url = STREAM_URLS[stationId];
-  if (!url) return null;
+const SHAZAM_KEY = 'shazam:all';
 
-  const pcmBuffer = await captureStreamToPcm(stationId, url);
-  if (!pcmBuffer || pcmBuffer.length < 1000) return null;
-
-  const samples = s16LEToSamplesArray(pcmBuffer);
-  const result = await shazam.recognizeSong(samples);
-
-  if (!result || (!result.title && !result.artist)) return null;
-
-  return {
-    title: result.title || null,
-    artist: result.artist || null,
-  };
-}
-
-async function recognizeAllStations() {
-  const entries = Object.entries(STREAM_URLS);
-  const results = await Promise.allSettled(
-    entries.map(([id]) => recognizeStation(id))
-  );
-
-  const data = {};
-  entries.forEach(([id], i) => {
-    const r = results[i];
-    data[id] = r.status === 'fulfilled' ? r.value : null;
-  });
-  return data;
-}
+let memCache = null;
+let memCacheTime = 0;
+const MEM_CACHE_TTL_MS = 30_000;
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -94,19 +25,23 @@ module.exports = async (req, res) => {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  if (cache && Date.now() - cacheTime < CACHE_TTL_MS) {
-    return res.status(200).json(cache);
+  const now = Date.now();
+  if (memCache && now - memCacheTime < MEM_CACHE_TTL_MS) {
+    return res.status(200).json(memCache);
   }
 
   try {
-    if (!pendingBatch) {
-      pendingBatch = recognizeAllStations().finally(() => { pendingBatch = null; });
+    const redis = getRedis();
+    const raw = await redis.get(SHAZAM_KEY);
+    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (data) {
+      memCache = data;
+      memCacheTime = now;
+      return res.status(200).json(data);
     }
-    const data = await pendingBatch;
-    cache = data;
-    cacheTime = Date.now();
-    return res.status(200).json(data);
+    return res.status(200).json(memCache || {});
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    if (memCache) return res.status(200).json(memCache);
+    return res.status(500).json({ error: 'Failed to fetch shazam data', detail: err.message });
   }
 };
