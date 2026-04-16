@@ -14,10 +14,3 @@ jobs:
           curl -sf -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             "https://proxy-sigma-sand.vercel.app/api/cron/update-now-playing"
-
-      - name: Trigger shazam update
-        run: |
-          curl -sf -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            --max-time 90 \
-            "https://proxy-sigma-sand.vercel.app/api/cron/update-shazam"

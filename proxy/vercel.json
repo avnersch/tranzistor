@@ -2,11 +2,10 @@
   "rewrites": [
     { "source": "/api/now-playing", "destination": "/api/now-playing" },
     { "source": "/api/shazam", "destination": "/api/shazam" },
-    { "source": "/api/cron/update-now-playing", "destination": "/api/cron/update-now-playing" },
-    { "source": "/api/cron/update-shazam", "destination": "/api/cron/update-shazam" }
+    { "source": "/api/cron/update-now-playing", "destination": "/api/cron/update-now-playing" }
   ],
   "functions": {
-    "api/cron/update-shazam.js": {
+    "api/shazam.js": {
       "memory": 1024,
       "maxDuration": 60
     },
