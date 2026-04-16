@@ -2,11 +2,11 @@ name: Update cached data
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
-  update-now-playing:
+  update-cache:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger now-playing update
@@ -15,9 +15,6 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             "https://proxy-sigma-sand.vercel.app/api/cron/update-now-playing"
 
-  update-shazam:
-    runs-on: ubuntu-latest
-    steps:
       - name: Trigger shazam update
         run: |
           curl -sf -X GET \
