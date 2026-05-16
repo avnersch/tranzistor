@@ -41,7 +41,7 @@ export const stations: Station[] = [
     name: 'רשת ב׳',
     frequency: '95.5 FM',
     frequencyNum: 95.5,
-    streamUrl: 'https://24443.live.streamtheworld.com/KAN_BET.mp3',
+    streamUrl: 'https://23543.live.streamtheworld.com/KAN_BET.mp3',
     color: '#2196F3',
     logoUrl: 'https://upload.wikimedia.org/wikipedia/he/e/e8/Kanbet.svg',
   },

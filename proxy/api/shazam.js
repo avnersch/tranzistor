@@ -3,21 +3,7 @@ const { execFile } = require('child_process');
 const ffmpegPath = require('ffmpeg-static');
 const fs = require('fs');
 const path = require('path');
-
-const STREAM_URLS = {
-  'kan88': 'https://24283.live.streamtheworld.com/KAN_88.mp3',
-  'lev-hamedina': 'https://cdn.cybercdn.live/Lev_Hamedina/Audio/icecast.audio',
-  'galgalatz': 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
-  'reshet-bet': 'https://24443.live.streamtheworld.com/KAN_BET.mp3',
-  'radius-nostalgi': 'https://cdna.streamgates.net/radios-audio/Nostalgia_963fm/icecast.audio',
-  'galei-tzahal': 'https://glzwizzlv.bynetcdn.com/glz_mp3',
-  'kol-hamusika': 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_KOL_HAMUSICA.mp3',
-  'reshet-gimel': 'https://27783.live.streamtheworld.com/KAN_GIMMEL.mp3',
-  'eco99': 'https://eco01.mediacast.co.il/ecolive/99fm_aac/icecast.audio',
-  'radius-100fm': 'https://cdn.cybercdn.live/Radios_100FM/Audio/icecast.audio',
-  'radio-tel-aviv': 'https://cdn88.mediacast.co.il/102fm-tlv/102fm_mp3/icecast.audio',
-  '103fm': 'https://cdn.cybercdn.live/103FM/Live/icecast.audio',
-};
+const STREAM_URLS = require('./_streams');
 
 const SAMPLE_DURATION_S = 12;
 const CACHE_TTL_MS = 30_000;

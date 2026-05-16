@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { stations, Station } from '../data/stations';
+import { Station } from '../data/stations';
+import { useStations } from '../hooks/useStreamUrls';
 import { StationCard } from '../components/StationCard';
 import { PlayerBar } from '../components/PlayerBar';
 import { CastModal } from '../components/CastModal';
@@ -23,9 +24,9 @@ import { useAllShazamMatches } from '../hooks/useShazamMatch';
 import { useCast } from '../hooks/useCast';
 import { Colors, Fonts } from '../theme/colors';
 
-const stationIds = stations.map((s) => s.id);
-
 export function HomeScreen() {
+  const stations = useStations();
+  const stationIds = useMemo(() => stations.map((s) => s.id), [stations]);
   const player = useAudioPlayer();
   const cast = useCast();
   const { data: allNowPlaying, refresh } = useAllNowPlaying(stationIds);

@@ -2,7 +2,8 @@
   "rewrites": [
     { "source": "/api/now-playing", "destination": "/api/now-playing" },
     { "source": "/api/shazam", "destination": "/api/shazam" },
-    { "source": "/api/cron/update-now-playing", "destination": "/api/cron/update-now-playing" }
+    { "source": "/api/cron/update-now-playing", "destination": "/api/cron/update-now-playing" },
+    { "source": "/api/streams", "destination": "/api/streams" }
   ],
   "functions": {
     "api/shazam.js": {
