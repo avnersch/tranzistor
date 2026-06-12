@@ -14,7 +14,7 @@ export const stations: Station[] = [
     name: 'כאן 88',
     frequency: '88 FM',
     frequencyNum: 88,
-    streamUrl: 'https://24283.live.streamtheworld.com/KAN_88.mp3',
+    streamUrl: 'https://25453.live.streamtheworld.com/KAN_88.mp3',
     color: '#E91E63',
     logoUrl: 'https://upload.wikimedia.org/wikipedia/he/0/09/Kan88Logo.svg',
   },

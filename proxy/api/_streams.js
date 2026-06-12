@@ -1,5 +1,5 @@
 const STREAM_URLS = {
-  'kan88': 'https://24283.live.streamtheworld.com/KAN_88.mp3',
+  'kan88': 'https://25453.live.streamtheworld.com/KAN_88.mp3',
   'lev-hamedina': 'https://cdn.cybercdn.live/Lev_Hamedina/Audio/icecast.audio',
   'galgalatz': 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
   'reshet-bet': 'https://23543.live.streamtheworld.com/KAN_BET.mp3',
