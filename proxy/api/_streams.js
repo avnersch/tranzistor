@@ -2,7 +2,7 @@ const STREAM_URLS = {
   'kan88': 'https://25453.live.streamtheworld.com/KAN_88.mp3',
   'lev-hamedina': 'https://cdn.cybercdn.live/Lev_Hamedina/Audio/icecast.audio',
   'galgalatz': 'https://glzwizzlv.bynetcdn.com/glglz_mp3',
-  'reshet-bet': 'https://19983.live.streamtheworld.com/KAN_BET.mp3',
+  'reshet-bet': 'https://22603.live.streamtheworld.com/KAN_BET.mp3',
   'radius-nostalgi': 'https://cdna.streamgates.net/radios-audio/Nostalgia_963fm/icecast.audio',
   'galei-tzahal': 'https://glzwizzlv.bynetcdn.com/glz_mp3',
   'kol-hamusika': 'https://playerservices.streamtheworld.com/api/livestream-redirect/KAN_KOL_HAMUSICA.mp3',
